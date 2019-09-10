@@ -1,12 +1,14 @@
 # Image Classification With PyTorch Transfer Learning Project
 
 ## Summary
-In this project, we create a Python application for an image classifier built using transfer learning with PyTorch. Code development can be followed in the "Image Classifier Project.ipynb" Jupyter notebook (also available in html).
-The classifier model is based on one of pretrained on ImageNet torchvision models with final fully connected classifier layers specified by user.
+In this project, we create a Python application for an image classifier built using transfer learning with PyTorch. The classifier model is based on one of pretrained on ImageNet torchvision models with final fully connected classifier layers specified by user.
 
 This project is part of the Udacity Introduction to Machine Learning Nanodegree.
 
 ## Project Structure
+Code development:
+- Image Classifier Project.ipynb (also available in html)
+
 Main application modules are:
   - train.py : training a classifier model
   - predict.py : classifying images using a trained classifier model checkpoint
