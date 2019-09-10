@@ -25,6 +25,7 @@ def  classify_image(image_tensor, model, top_k, category_names, gpu):
     Returns:
         probs ([float]): list of prediction probabilities
         preds ([int]): list of predicted class indices
+        class_names ([str]): list of predicted class names. If category_names is not provided returns preds.
     """
     device = select_device(gpu=gpu)
     print(f'\nClassifying image using {device}...')
