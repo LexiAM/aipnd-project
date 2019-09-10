@@ -92,11 +92,10 @@ test_acc = test_model(
 print(f'\nModel achieved accuracy of {(test_acc * 100):.2f}% on Test data set.')
 
 # Plot training history
-# NOTE: Currently not working because display device is not available
-# try:  # try plotting data with matplotlib
-#     plot_history(history)
-# except:
-#     pass
+# plot_history(history)
+
+# NOTE: plot_history() is currently not working on Udacity workspace because
+# display device is not available
 
 # Save checkpoint
 ###########################

@@ -56,12 +56,12 @@ print(f'\nPredicted top {top_k} classes {class_names} with '
       f'probabilities {probabilities}')
 
 # viasualize image with predicted classes and probabilities
-# NOTE: Currently not working because display device is not available
-# try:
-#     display_prediction(
-#             image_path=args.image_path,
-#             probabilities=probabilities,
-#             class_idxs=predictions,
-#             class_names=class_names)
-# except:
-#     pass
+
+# display_prediction(
+#         image_path=args.image_path,
+#         probabilities=probabilities,
+#         class_idxs=predictions,
+#         class_names=class_names)
+
+# NOTE: display_prediction() is currently not working on Udacity workspace
+# because display device is not available
