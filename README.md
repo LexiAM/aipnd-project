@@ -27,7 +27,7 @@ Trains a model with user specified classifier and saves model and optimizer para
 #### Options:
 - data_directory : location of training, validation and test data
 - -h, --help : train.py options help
-- --save_dir : directory for saving model checkpoints
+- --save_path : Set model checkpoint save filename path
 - --resume_checkpoint : filepath for model checkpoint for resumption of training.
                       If resume_checkpoint is specified --arch, --learning_rate,
                       --hidden_units, and --drop_p arguments are ignored.
@@ -83,6 +83,8 @@ Python 3.6 + with the following packages:
 - copy
 - os
 - sys
+- erno
+- progress
 
 ## Authors
 - Alexander Manasson
