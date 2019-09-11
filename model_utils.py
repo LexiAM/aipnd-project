@@ -3,7 +3,9 @@ import time
 import copy
 import numpy as np
 import os
+import errno
 import sys
+from progress.bar import ShadyBar
 
 from workspace_utils import active_session
 from data_utils import prediction_class_names
@@ -336,36 +338,41 @@ def train_model(dataloaders, model, optimizer, gpu=True,
             # Reset running statistics
             running_loss = 0
             running_corrects = 0
-            for inputs, labels in dataloaders[phase]:
-                # Send inputs, labels to device
-                inputs, labels = inputs.to(device), labels.to(device)
 
-                # Reset parameter gradients for training
-                if phase == 'train':
-                    optimizer.zero_grad()
+            # progress bar
+            with ShadyBar('Phase progress', max=len(dataloaders[phase])) as bar:
+                # train/validate epoch
+                for inputs, labels in dataloaders[phase]:
+                    # Send inputs, labels to device
+                    inputs, labels = inputs.to(device), labels.to(device)
 
-                with torch.set_grad_enabled(phase == 'train'):
-                    # Forward propagation
-                    logps = model(inputs)
-                    # Caluclate loss
-                    loss = criterion(logps, labels)
-
+                    # Reset parameter gradients for training
                     if phase == 'train':
-                        # Back propagation
-                        loss.backward()
-                        # Update model parameters
-                        optimizer.step()
+                        optimizer.zero_grad()
 
-                # Update running statistics
-                running_loss += loss.item() * inputs.size(0)
+                    with torch.set_grad_enabled(phase == 'train'):
+                        # Forward propagation
+                        logps = model(inputs)
+                        # Caluclate loss
+                        loss = criterion(logps, labels)
 
-                # Running count of correctly identified classes
-                ps = torch.exp(logps)  # probabilities
-                _, predictions = ps.topk(1, dim=1)   # top predictions
-                # Number of correctly classified inputs
-                equals = predictions == labels.view(*predictions.shape)
-                running_corrects += torch.sum(
-                    equals.type(torch.FloatTensor)).item()
+                        if phase == 'train':
+                            # Back propagation
+                            loss.backward()
+                            # Update model parameters
+                            optimizer.step()
+
+                    # Update running statistics
+                    running_loss += loss.item() * inputs.size(0)
+
+                    # Running count of correctly identified classes
+                    ps = torch.exp(logps)  # probabilities
+                    _, predictions = ps.topk(1, dim=1)   # top predictions
+                    # Number of correctly classified inputs
+                    equals = predictions == labels.view(*predictions.shape)
+                    running_corrects += torch.sum(
+                        equals.type(torch.FloatTensor)).item()
+                    bar.next()  # update progress bar
 
             # Calculate phase statistics
             phase_loss = running_loss / len(dataloaders[phase].dataset)
@@ -416,30 +423,30 @@ def plot_history(history):
     epochs = np.arange(1, len(history['train']['loss']) + 1)
 
     # Plot losses
-    ax1.plot(epochs, history['train']['loss'], 'g-')
-    ax1.plot(epochs, history['valid']['loss'], 'b-')
+    tl, = ax1.plot(epochs, history['train']['loss'], 'g-', label='Training Loss')
+    vl, = ax1.plot(epochs, history['valid']['loss'], 'b-', label='Validation Loss')
     ax1.set_xlabel('Training Epoch')
     ax1.set_ylabel('Loss')
-    ax1.legend(['Training Loss', 'Validation Loss'],bbox_to_anchor=(0.6,0.2))
+    leg1 = ax1.legend(loc='lower right')
 
     # Plot accuracies
     ax2 = ax1.twinx()
-    ax2.plot(epochs, history['train']['acc'], 'y-')
-    ax2.plot(epochs, history['valid']['acc'], 'r-')
+    ta, = ax2.plot(epochs, history['train']['acc'], 'y-')
+    va, = ax2.plot(epochs, history['valid']['acc'], 'r-')
     ax2.set_ylabel('Accuracy')
-    ax2.legend(['Training Accuracy', 'Validation Accuracy'],
-               bbox_to_anchor=(0.5,0.9))
-
+    leg2 = ax1.legend([ta, va], ['Training Accuracy','Validation Accuracy'],
+                      loc='upper right')
+    ax1.add_artist(leg1)
     plt.legend(frameon=False)
     plt.show()
 
 
-def save_checkpoint(save_dir, epoch, model, optimizer, history):
+def save_checkpoint(save_path, epoch, model, optimizer, history):
     """Saves PyTorch checkpoint on CPU with provided model, optimizer and
        training history
 
     Args:
-        save_dir (str): checkpoint save directory
+        save_path (str): checkpoint save path including file name
         epoch (int): training epoch being saved
         model: model for which checkpoint is being saved
         optimizer (torch.optim.Optimizer)
@@ -448,16 +455,13 @@ def save_checkpoint(save_dir, epoch, model, optimizer, history):
     """
     print(f'\nSaving best training epoch {epoch} checkpoint...')
 
-    # create checkpoint filepath
-    #############################
-    if save_dir[-1] == '/':
-        save_dir = save_dir[:-1]
-
-    # make save_dir if necessary
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
-    filepath = save_dir + '/checkpoint.pth'
+    # create valid save_path if needed
+    if not os.path.exists(os.path.dirname(save_path)):
+        try:
+            os.makedirs(os.path.dirname(save_path))
+        except OSError as e: # Guard against race condition
+            if e.errno != errno.EEXIST:
+                raise
 
     model.to('cpu')  # no need to save on gpu
 
@@ -474,10 +478,10 @@ def save_checkpoint(save_dir, epoch, model, optimizer, history):
         'optimizer_state_dict': optimizer.state_dict()
     }
     # Save
-    torch.save(checkpoint, filepath)
+    torch.save(checkpoint, save_path)
 
     # Notify user
-    file_size = os.path.getsize(filepath)
+    file_size = os.path.getsize(save_path)
     print(f'\nCheckpoint saved: {(file_size / 1e9):.2f}Gb\n')
 
 
@@ -498,26 +502,30 @@ def test_model(dataloader, model, gpu=False):
     device = select_device(gpu)
     model.to(device)
 
+
     # setup loss
     criterion = nn.NLLLoss()
 
     # Run validation on TEST data
     running_corrects = 0
-    for inputs, labels in dataloader:
-        # send inputs, labels to device
-        inputs, labels = inputs.to(device), labels.to(device)
 
-        with torch.no_grad():
-            # forward propagation
-            logps = model(inputs)
-            # caluclate loss
-            loss = criterion(logps, labels)
+    with ShadyBar('Progress', max=len(dataloader)) as bar:  # progress bar
+        for inputs, labels in dataloader:
+            # send inputs, labels to device
+            inputs, labels = inputs.to(device), labels.to(device)
 
-        # Running accuracy
-        ps = torch.exp(logps)  # probabilities
-        _, predictions = ps.topk(1, dim=1)   # top predictions
-        equals = predictions == labels.view(*predictions.shape)
-        running_corrects += torch.sum(equals.type(torch.FloatTensor)).item()
+            with torch.no_grad():
+                # forward propagation
+                logps = model(inputs)
+                # caluclate loss
+                loss = criterion(logps, labels)
+
+            # Running accuracy
+            ps = torch.exp(logps)  # probabilities
+            _, predictions = ps.topk(1, dim=1)   # top predictions
+            equals = predictions == labels.view(*predictions.shape)
+            running_corrects += torch.sum(equals.type(torch.FloatTensor)).item()
+            bar.next()  # update progress bar
 
     # Calculate accuracy
     test_acc = running_corrects / len(dataloader.dataset)

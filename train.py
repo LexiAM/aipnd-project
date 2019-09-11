@@ -22,8 +22,10 @@ parser.add_argument(
         help='Specify directory containing training, validation, and test data.'
         ' default="flowers/"')
 parser.add_argument(
-        '--save_dir', action='store', type=str, default='',
-        help='Set directory to save checkpoints. default="working directory"')
+        '--save_path', action='store', type=str,
+        default='checkpoints/checkpoint.pth',
+        help='Provide save checkpoint file path. '
+        'default="checkpoints/checkpoint.pth"')
 parser.add_argument(
         '--resume_checkpoint', action='store', type=str, default='',
         help='Provide filepath for model checkpoint for continued training. '
@@ -80,16 +82,16 @@ else:
 
 # Train model
 ###########################
-with active_session():
-    history, best_epoch = train_model(
-            dataloaders=dataloaders, model=model,
-            optimizer=optimizer, gpu=gpu, start_epoch=start_epoch,
-            epochs=args.epochs, train_history=history)
+# with active_session():
+history, best_epoch = train_model(
+        dataloaders=dataloaders, model=model,
+        optimizer=optimizer, gpu=gpu, start_epoch=start_epoch,
+        epochs=args.epochs, train_history=history)
 
 # Check performance on test data set
-test_acc = test_model(
-        dataloader=dataloaders['test'], model=model, gpu=gpu)
-print(f'\nModel achieved accuracy of {(test_acc * 100):.2f}% on Test data set.')
+# test_acc = test_model(
+#         dataloader=dataloaders['test'], model=model, gpu=gpu)
+# print(f'\nModel achieved accuracy of {(test_acc * 100):.2f}% on Test data set.')
 
 # Plot training history
 plot_history(history)
@@ -99,5 +101,5 @@ plot_history(history)
 # Save checkpoint
 ###########################
 save_checkpoint(
-        save_dir=args.save_dir, epoch=best_epoch, model=model,
+        save_path=args.save_path, epoch=best_epoch, model=model,
         optimizer=optimizer, history=history)
