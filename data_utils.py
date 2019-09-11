@@ -74,7 +74,7 @@ def load_data(path):
     return dataloaders, class_to_idx
 
 
-def display_prediction(image_path, probabilities, class_idxs, class_names=[]):
+def display_prediction(image_path, probabilities, predictions):
     """Displays classified image with top predicted class as title and
        horizontal bar chart of predicted probabilities of predicted top classes
 
@@ -85,12 +85,7 @@ def display_prediction(image_path, probabilities, class_idxs, class_names=[]):
         class_idxs ([int]): list of predicted topk class indices
         class_names ([str]): list of predicted topk class names
     """
-    if class_names:
-        classes = class_names
-    else:  # use class indices if class names are not provided
-        classes = [str(x) for x in class_idxs]
-
-    top_class = classes[0]
+    top_class = predictions[0]
 
     # Setup plot gird and title
     fig = plt.figure(figsize=(4, 5.4))
@@ -104,15 +99,18 @@ def display_prediction(image_path, probabilities, class_idxs, class_names=[]):
     ax1.set_yticks([])
 
     # Display predicted classes and probabilities
-    y = np.arange(len(classes))  # setup y axis grid
+    y = np.arange(len(predictions))  # setup y axis grid
     ax2.barh(y, probabilities)
     ax2.set_yticks(y)
-    ax2.set_yticklabels(classes)
+    ax2.set_yticklabels(predictions)
     ax2.invert_yaxis()  # prediction with highest probability on top
     ax2.set_xlabel('Prediction probability')
 
     # Adjust layout
     fig.tight_layout()
+    plt.subplots_adjust(top=0.93)
+
+    plt.show()
 
 def prediction_class_names(predictions, class_to_idx, category_names):
     """convert indeces to named classesself.

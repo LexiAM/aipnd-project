@@ -25,7 +25,6 @@ def  classify_image(image_tensor, model, top_k, category_names, gpu):
     Returns:
         probs ([float]): list of prediction probabilities
         preds ([int]): list of predicted class indices
-        class_names ([str]): list of predicted class names. If category_names is not provided returns preds.
     """
     device = select_device(gpu=gpu)
     print(f'\nClassifying image using {device}...')
@@ -37,12 +36,12 @@ def  classify_image(image_tensor, model, top_k, category_names, gpu):
     probs, preds = probs.tolist()[0], preds.tolist()[0]
 
     # Provide real class names if mapping dictionary path is provided in the args
-    class_names = prediction_class_names(
+    preds = prediction_class_names(
             predictions=preds,
             class_to_idx=model.class_to_idx,
             category_names=category_names)
 
-    return probs, preds, class_names
+    return probs, preds
 
 
 def create_model(arch='vgg16', class_to_idx=None, hidden_units=[], drop_p=0.5):

@@ -41,27 +41,23 @@ model, _, _, _ = load_checkpoint(
 
 # Classify image
 ############################################
-probabilities, predicitions, class_names = classify_image(
+probabilities, predictions = classify_image(
         image_tensor=image_tensor, model=model, top_k=args.top_k,
         category_names=args.category_names, gpu=gpu)
 
 # Show results
 ############################################
-top_class = class_names[0]
+top_class = predictions[0]
 top_prob = probabilities[0]
 top_k = args.top_k
 print(f'\nTop predicted class is "{top_class.capitalize()}" with '
       f'probability {top_prob:.4f}')
-print(f'\nPredicted top {top_k} classes {class_names} with '
+print(f'\nPredicted top {top_k} classes {predictions} with '
       f'probabilities {probabilities}')
 
 # viasualize image with predicted classes and probabilities
-
-# display_prediction(
-#         image_path=args.image_path,
-#         probabilities=probabilities,
-#         class_idxs=predictions,
-#         class_names=class_names)
-
-# NOTE: display_prediction() is currently not working on Udacity workspace
-# because display device is not available
+# NOTE: Currently not working because display device is not available
+display_prediction(
+        image_path=args.image_path,
+        probabilities=probabilities,
+        predictions=predictions)
