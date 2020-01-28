@@ -1,6 +1,5 @@
 import argparse
 
-from workspace_utils import active_session
 from data_utils import load_data
 from model_utils import (
         create_model,  # builds model based on selected architecture
@@ -82,7 +81,6 @@ else:
 
 # Train model
 ###########################
-# with active_session():
 history, best_epoch = train_model(
         dataloaders=dataloaders, model=model,
         optimizer=optimizer, gpu=gpu, start_epoch=start_epoch,

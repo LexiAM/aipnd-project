@@ -7,7 +7,6 @@ import errno
 import sys
 from progress.bar import ShadyBar
 
-from workspace_utils import active_session
 from data_utils import prediction_class_names
 
 # Import Pytorch modules

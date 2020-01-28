@@ -1,25 +1,33 @@
-# Image Classification With PyTorch Transfer Learning Project
+# Image Classification With PyTorch Deep Transfer Learning
 
 ## Summary
-In this project, we create a Python application for an image classifier built using transfer learning with PyTorch. The classifier model is based on one of pretrained on ImageNet torchvision models with final fully connected classifier layers specified by user.
+In this project, we create a Python application for classification of flower images into 102 categories, built using transfer learning with PyTorch. The classifier model is based on one of pre-trained on ImageNet torchvision models with final fully connected classifier layers specified by user.
 
-This project is part of the Udacity Introduction to Machine Learning Nanodegree.
+For application demonstration purposes (to save paid GPU time), results shown below are for early model termination prior to achievement of full saturation of training and validation accuracies after only 9 training epochs. 
+
+![](/resources/validation_curve.png?raw=true)
+
+Note, that training data was randomly rotated, flipped, and cropped, resulting in lower training accuracy and higher training loss relative to those achieved on the validation data that has not been randomly manipulated.
+
+Despite premature termination, model has achieved an **82.3% accuracy on the test data set**.
+
+![](/resources/classification_example.png?raw=true)
 
 ## Project Structure
-Code development:
-- Image Classifier Project.ipynb (also available in html)
-
-Main application modules are:
-  - train.py : training a classifier model
-  - predict.py : classifying images using a trained classifier model checkpoint
-
-Support modules:
-  - model_utils.py : helper functions for building, loading, saving, training and visualizing training history of a classifier model
-  - data_utils.py : helper functions for loading, processing and transforming data, and visualizing prediction results
-  - workslace_utils.py : helper functions for maintaining active workspace during long training cycles
-  - cat_to_name.json : dictionary containing mapping of image class indices to real class names
-
-## Details
+```
+|-- `Image Classifier Project.ipynb`: Code development Jupyter Notebook
+|
+|-- `train.py`: module for training the classifier model
+|-- `predict.py`: module for using pre-trained model for image classification predicitions
+|
+|-- `model_utils.py`: module with helper functions for building, loading, saving, 
+|                     training and visualizing training history of a classifier model
+|-- `data_utils.py`: module with helper functions for loading, processing and transforming data, 
+|                    and visualizing prediction results
+|-- `workslace_utils.py`: helper functions for maintaining UDACITY active workspace during long training cycles
+|-- 1cat_to_name.json1 : dictionary containing mapping of image class indices to real class names
+```
+## Module Details
 ### train.py
 #### Description:
 Trains a model with user specified classifier and saves model and optimizer parameters achieved after training epoch with the highest validation accuracy.
@@ -69,23 +77,26 @@ Predicts input image class using trained model checkpoint.
 
 ## Requirements
 Python 3.6 + with the following packages:
-- signal
-- contextlib
-- requests
-- argparse
-- numpy
-- PIL
-- json
-- matplotlib
-- torch
-- torchvision
-- time
-- copy
-- os
-- sys
-- erno
-- progress
-
+```
+signal
+contextlib
+requests
+argparse
+numpy
+PIL
+json
+matplotlib
+torch
+torchvision
+time
+copy
+os
+sys
+erno
+progress
+```
 ## Authors
 - Alexander Manasson
-- Udacity
+
+## Acknowledgements
+- Udacity for providing template notebook code
